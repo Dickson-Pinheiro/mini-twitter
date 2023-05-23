@@ -1,0 +1,7 @@
+#db config
+ENGINE=
+NAME=
+USERPOSTGRES=
+PASSWORD=
+HOST=
+PORT=
