@@ -8,12 +8,13 @@ from django.contrib.auth.models import User
 from .serializers import UserSerializer
 
 
-class UserViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     authentication_classes= (RemoteUserAuthentication,)
     permission_classes=(AllowAny,)
-
+    http_method_names = ['post']
+    
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
