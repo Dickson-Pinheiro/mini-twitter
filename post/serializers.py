@@ -28,3 +28,14 @@ class PostSerializer(serializers.ModelSerializer):
             'content',
             'author'
         )
+
+class ListPostSerializer(serializers.ModelSerializer):
+    author = ProfileSerializer(read_only=True, many=False)
+    class Meta:
+        model = Post
+
+        fields = (
+            'id',
+            'content',
+            'author'
+        )

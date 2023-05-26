@@ -21,6 +21,7 @@ from django.urls import path, include
 from authuser.urls import router
 from userprofile.urls import profile_router
 from post.urls import post_router
+from follow.urls import follow_router
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -29,6 +30,7 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view()),
     path('', include(profile_router.urls)),
     path('', include(post_router.urls)),
+    path('', include(follow_router.urls)),
     path('', include(router.urls))
 ]
 

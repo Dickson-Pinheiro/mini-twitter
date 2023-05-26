@@ -1,14 +1,17 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from userprofile.models import Profile
 from .models import Post
-from .serializers import PostSerializer
+from .serializers import PostSerializer, ListPostSerializer
 JWT_authenticator = JWTAuthentication()
 
-class PostViewSet(viewsets.ModelViewSet):
+class PostViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet):
 
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
@@ -16,7 +19,6 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
 
     def create(self, request, *args, **kwargs):
-        token = request.auth
         response = JWT_authenticator.authenticate(request)
         if response is not None:
             user, token = response
@@ -27,3 +29,17 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         return Response(status=status.HTTP_201_CREATED)
+
+
+    def list(self, request, *args, **kwargs):
+        response = JWT_authenticator.authenticate(request)
+        user, token = response
+        
+        profile = Profile.objects.get(user=token['user_id'])
+        following_profiles = profile.followerdata.all()
+        following_ids = following_profiles.values_list('followed_id', flat=True)
+        posts = Post.objects.filter(author__in=following_ids)
+        querysetFilter = self.filter_queryset(posts)
+        page = self.paginate_queryset(querysetFilter)
+        serializer = ListPostSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
