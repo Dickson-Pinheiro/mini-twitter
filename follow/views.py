@@ -24,8 +24,17 @@ class FollowViewSet(
         response = JWT_authenticator.authenticate(request)
         if response is not None:
             user, token = response
-            profile = Profile.objects.filter(user = token['user_id'])
-            request.data['follower'] = profile.get().id
+
+            try:
+                profile = Profile.objects.get(user = token['user_id'])
+            except Profile.DoesNotExist:
+                error_data = {
+                'error': 'Profile does not exist',
+                'detail': 'The profile associated with the user does not exist.'
+                }
+                return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
+
+            request.data['follower'] = profile.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
