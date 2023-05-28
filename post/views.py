@@ -45,7 +45,15 @@ class PostViewSet(
         response = JWT_authenticator.authenticate(request)
         user, token = response
         
-        profile = Profile.objects.get(user=token['user_id'])
+        try:
+                profile = Profile.objects.get(user = token['user_id'])
+
+        except Profile.DoesNotExist:
+                error_data = {
+                'error': 'Profile does not exist',
+                'detail': 'The profile associated with the user does not exist.'
+                }
+                return Response(error_data, status=status.HTTP_400_BAD_REQUEST) 
         following_profiles = profile.followerdata.all()
         following_ids = following_profiles.values_list('followed_id', flat=True)
         posts = Post.objects.filter(author__in=following_ids)
